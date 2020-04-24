@@ -10,7 +10,7 @@ bot = telebot.TeleBot(token)
 def welcome(message):
     # bot.reply_to(message, message.text)
     # bot.send_message(message.chat.id, "Привет!")
-    # users[message.chat.id] = track
+    users[message.chat.id] = track
     menu = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
     buttom1 = types.KeyboardButton("Список привычек")
     buttom2 = types.KeyboardButton("Добавить привычку")
@@ -37,6 +37,7 @@ users = {}
 
 @bot.message_handler(content_types=['text'])
 def get_message(message):
+    users[message.chat.id] = track
     if message.text == "Список привычек":
         inline = types.InlineKeyboardMarkup(row_width=1)
         # for key in track.keys():
