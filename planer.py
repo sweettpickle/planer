@@ -10,7 +10,6 @@ bot = telebot.TeleBot(token)
 def welcome(message):
     # bot.reply_to(message, message.text)
     # bot.send_message(message.chat.id, "Привет!")
-    users[message.chat.id] = track
     menu = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
     buttom1 = types.KeyboardButton("Список привычек")
     buttom2 = types.KeyboardButton("Добавить привычку")
@@ -33,15 +32,11 @@ track = {
     "Чтение 30 минут": create_progress(21)
 }
 
-users = {}
-
 @bot.message_handler(content_types=['text'])
 def get_message(message):
-    users[message.chat.id] = track
     if message.text == "Список привычек":
         inline = types.InlineKeyboardMarkup(row_width=1)
-        # for key in track.keys():
-        for key in users[message.chat.id].keys():
+        for key in track.keys():
             inline.add(types.InlineKeyboardButton(key, callback_data=key))
         bot.send_message(message.chat.id, "Ваш список привычек:", reply_markup=inline)
 
@@ -54,8 +49,7 @@ def get_message(message):
         bot.send_message(message.chat.id, "Введите название:")
 
 def add_tracker(message):
-    # if message.text in track:
-    if message.text in users[message.chat.id]:
+    if message.text in track:
         bot.send_message(message.chat.id, "Привычка с таким названием уже есть")
     else:
         global key
@@ -64,14 +58,12 @@ def add_tracker(message):
         bot.send_message(message.chat.id, "Введите количество дней:")
 
 def add_tracker2(message):
-    # track[key] = create_progress(int(message.text))
-    users[message.chat.id][key] = create_progress(int(message.text))
+    track[key] = create_progress(int(message.text))
     bot.send_message(message.chat.id, "Привычка добавлена")
 
 
 def del_tracker(message):
-    # if message.text in track:
-    if message.text in users[message.chat.id]:
+    if message.text in track:
         track.pop(message.text)
         bot.send_message(message.chat.id, "Привычка удалена")
     else:
@@ -80,19 +72,16 @@ def del_tracker(message):
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call):
-    # if call.data in track:
-    if call.data in users[call.message.chat.id]:
+    if call.data in track:
         global key
         key = call.data
         inline = types.InlineKeyboardMarkup(row_width=1)
-        # but = types.InlineKeyboardButton(''.join(track[key]), callback_data="check")
-        but = types.InlineKeyboardButton(''.join(users[call.message.chat.id][key]), callback_data="check")
+        but = types.InlineKeyboardButton(''.join(track[key]), callback_data="check")
         inline.add(but)
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                                 text=key, reply_markup=inline)
     elif call.data == "check":
-        # check(key)
-        check(key, call.message.chat.id)
+        check(key)
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                               text=key, reply_markup=None)
         inline = types.InlineKeyboardMarkup(row_width=1)
@@ -103,10 +92,10 @@ def callback_inline(call):
         bot.answer_callback_query(call.id, text="Отмечено")
 
 
-# def check(key):
-def check(key, id):
-    # lst = track.get(key)
-    lst = users[id].get(key)
+def check(key):
+# def check(key, id):
+    lst = track.get(key)
+    # lst = users[id].get(key)
     for i in range(len(lst)):
         if lst[i] == not_done:
             lst[i] = done
